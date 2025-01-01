@@ -60,7 +60,6 @@ static void	sig_handler(int sig, siginfo_t *info, void *context)
 
 int	main(void)
 {
-	int	i;
 
 	g_srv.sa_sigaction = sig_handler;
 	g_srv.sa_flags = SA_SIGINFO;
@@ -72,7 +71,6 @@ int	main(void)
 		sigaction(SIGUSR1, &g_srv, NULL);
 		sigaction(SIGUSR2, &g_srv, NULL);
 		pause();
-		i++;
 	}
 	return (0);
 }
