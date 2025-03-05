@@ -10,10 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
 #include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-volatile sig_atomic_t	g_flag = 0;
+int		g_flag = 0;
 
 ssize_t	mini_atoi(const char *nptr)
 {
@@ -36,7 +37,7 @@ void	handler(int sig)
 	if (sig == SIGUSR1)
 		g_flag = 1;
 	else if (sig == SIGUSR2)
-		ft_printf("Your message has been sent successfully");
+		write(1, "Your message has been sent successfully\n", 40);
 }
 
 int	ft_iterative_power(int nb, int power)
@@ -63,17 +64,23 @@ void	sig_send(char c_of_str, __pid_t pid)
 	{
 		val = c_of_str & ft_iterative_power(2, pos_bit);
 		if (!val)
-			kill(pid, SIGUSR1);
+		{
+			if (-1 == kill(pid, SIGUSR1))
+				exit((write(2, "Server not running\n", 19), 1));
+		}
 		else
-			kill(pid, SIGUSR2);
+		{
+			if (-1 == kill(pid, SIGUSR2))
+				exit((write(2, "Server not running\n", 19), 1));
+		}
 		while (!g_flag)
-			usleep(0);
+			pause();
 		g_flag = 0;
 		pos_bit--;
 	}
 }
 
-int	main(int ac, char *av[])
+int	main(int ac, char **av)
 {
 	__pid_t	pid;
 	size_t	index;
@@ -81,10 +88,10 @@ int	main(int ac, char *av[])
 	signal(SIGUSR1, handler);
 	signal(SIGUSR2, handler);
 	if (ac != 3)
-		return (ft_printf("<PID_SERVER> <STRING_TO_PASS>\n"), 1);
+		return (write(2, "<PID_SERVER> <STRING_TO_PASS>\n", 30), 1);
 	pid = mini_atoi(av[1]);
 	if (pid == -1)
-		return (ft_printf("error with pid ! \n"));
+		return (write(2, "error with pid ! \n", 18), 1);
 	index = 0;
 	while (av[2][index])
 		sig_send(av[2][index++], pid);
